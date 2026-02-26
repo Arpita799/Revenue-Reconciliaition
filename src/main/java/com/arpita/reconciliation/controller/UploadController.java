@@ -32,6 +32,7 @@ public class UploadController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
+    @PostMapping("/payment")
     public ResponseEntity<UploadResponse> uploadPayment(@RequestParam("file") MultipartFile file){
         validateFile(file);
         log.info("Payment file upload started: {}",file.getOriginalFilename());

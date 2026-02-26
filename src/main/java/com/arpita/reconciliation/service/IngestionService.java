@@ -94,7 +94,7 @@ public class IngestionService {
         error.setRawLine(line);
         error.setRowNumber(rowNumber);
         error.setCreatedAt(LocalDateTime.now());
-
+        error.setErrorMessage(errorMessage);
         ingestionErrorsRepository.save(error);
     }
 }
