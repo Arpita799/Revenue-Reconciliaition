@@ -1,6 +1,7 @@
-package com.arpita.reconciliation.service;
+package com.arpita.reconciliation.controller;
 
 import com.arpita.reconciliation.dto.UploadResponse;
+import com.arpita.reconciliation.service.IngestionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -23,20 +24,20 @@ public class UploadController {
     private static final long MAX_FILE_SIZE = 5 * 1024 * 1024;
 
     @PostMapping("/billing")
-    public ResponseEntity<String> uploadBilling(@RequestParam("file") MultipartFile file){
+    public ResponseEntity<UploadResponse> uploadBilling(@RequestParam("file") MultipartFile file){
         validateFile(file);
         log.info("Billing file upload started: {}",file.getOriginalFilename());
         UploadResponse response = ingestionService.processBillingFile(file);
         log.info("Billing file upload started: {}",file.getOriginalFilename());
-        return ResponseEntity.status(HttpStatus.OK).body.(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    public ResponseEntity<String> uploadPayment(@RequestParam("file") MultipartFile file){
+    public ResponseEntity<UploadResponse> uploadPayment(@RequestParam("file") MultipartFile file){
         validateFile(file);
         log.info("Payment file upload started: {}",file.getOriginalFilename());
         UploadResponse response = ingestionService.processPaymentFile(file);
         log.info("Payment file upload started: {}",file.getOriginalFilename());
-        return ResponseEntity.status(HttpStatus.OK).body.(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     private void validateFile(MultipartFile file){
