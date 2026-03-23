@@ -2,6 +2,8 @@ package com.arpita.reconciliation.parser;
 
 import com.arpita.reconciliation.entity.BillingRecords;
 import com.arpita.reconciliation.entity.PaymentRecords;
+import com.arpita.reconciliation.repository.BillingRecordsRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -10,7 +12,11 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Component
+@RequiredArgsConstructor
 public class PaymentCsvParser {
+
+    private final BillingRecordsRepository billingRecordsRepository;
+
     public PaymentRecords parse(String line, String sourceFile) {
         if(line == null || line.trim().isEmpty()){
             throw new IllegalArgumentException("Empty line encountered!");
@@ -18,15 +24,23 @@ public class PaymentCsvParser {
 
         String[] fields = line.split(",");
 
-        if(fields.length < 3){
+        if(fields.length < 5){
             throw new IllegalArgumentException("Missing required fields!");
         }
         String accountId = fields[0].trim();
         String dateStr = fields[1].trim();
         String amountStr = fields[2].trim();
+        String transactionId = fields[3].trim();
+        String referenceId = fields[4].trim();
 
         if(accountId.isEmpty()){
             throw new IllegalArgumentException("Account ID is missing!");
+        }
+        if(transactionId.isEmpty()){
+            throw new IllegalArgumentException("Transaction ID is missing!");
+        }
+        if(referenceId.isEmpty()){
+            throw new IllegalArgumentException("Reference ID is missing!");
         }
         try{
             LocalDate recordDate = LocalDate.parse(dateStr);
@@ -35,6 +49,9 @@ public class PaymentCsvParser {
             record.setAccountId(accountId);
             record.setRecordDate(recordDate);
             record.setPaidAmount(paidAmount);
+            record.setTransactionId(transactionId);
+            BillingRecords billing = billingRecordsRepository.findByInvoiceId(referenceId);
+            record.setBillingRecords(billing);
             record.setSourceFile(sourceFile);
             record.setCreatedAt(LocalDateTime.now());
 
@@ -45,6 +62,9 @@ public class PaymentCsvParser {
         }
         catch (NumberFormatException e){
             throw new IllegalArgumentException("Invalid amount format:" + amountStr,e);
+        }
+        catch (RuntimeException e) {
+            throw new RuntimeException("Invoice not found!");
         }
     }
 }

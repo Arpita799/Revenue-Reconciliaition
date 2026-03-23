@@ -17,21 +17,26 @@ public class BillingCsvParser {
 
         String[] fields = line.split(",");
 
-        if(fields.length < 3){
+        if(fields.length < 4){
             throw new IllegalArgumentException("Missing required fields!");
         }
         String accountId = fields[0].trim();
         String dateStr = fields[1].trim();
         String amountStr = fields[2].trim();
+        String invoiceId = fields[3].trim();
 
         if(accountId.isEmpty()){
             throw new IllegalArgumentException("Account ID is missing!");
+        }
+        if(invoiceId.isEmpty()){
+            throw new IllegalArgumentException("Invoice ID is missing!");
         }
          try{
              LocalDate recordDate = LocalDate.parse(dateStr);
              BigDecimal billedAmount = new BigDecimal(amountStr);
              BillingRecords record = new BillingRecords();
              record.setAccountId(accountId);
+             record.setInvoiceId(invoiceId);
              record.setRecordDate(recordDate);
              record.setBilledAmount(billedAmount);
              record.setSourceFile(sourceFile);

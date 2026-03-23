@@ -60,7 +60,9 @@ public class UploadController {
         final Set<String> ALLOWED_MIME_TYPES = Set.of(
                 "text/csv",
                 "application/vnd.ms-excel",
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "application/octet-stream",
+                "text/plain"
         );
         if(contentType == null ||
                 !ALLOWED_MIME_TYPES.contains(contentType)){

@@ -22,6 +22,16 @@ public class PaymentRecords {
     @Column(nullable = false)
     private String accountId;
 
+    @Column(nullable = false, unique = true)
+    private String transactionId;
+
+    @ManyToOne
+    @JoinColumn(
+            name = "reference_id",
+            referencedColumnName = "invoice_id"
+    )
+    private BillingRecords billingRecords;
+
     @Column(nullable = false)
     private LocalDate recordDate;
 
