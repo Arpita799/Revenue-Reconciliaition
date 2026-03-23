@@ -28,7 +28,8 @@ public class PaymentRecords {
     @ManyToOne
     @JoinColumn(
             name = "reference_id",
-            referencedColumnName = "invoice_id"
+            referencedColumnName = "invoice_id",
+            nullable = false
     )
     private BillingRecords billingRecords;
 

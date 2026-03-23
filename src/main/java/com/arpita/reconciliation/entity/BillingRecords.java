@@ -23,7 +23,7 @@ public class BillingRecords {
     @Column(nullable = false)
     private String accountId;
 
-    @Column(nullable = false, unique = true)
+    @Column(name="invoice_id", nullable = false, unique = true)
     private String invoiceId;
 
     @Column(nullable = false)
