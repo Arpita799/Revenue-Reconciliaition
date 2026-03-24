@@ -1,0 +1,26 @@
+$kind: http-request
+name: Upload empty file
+description: |-
+  Error case: upload an empty file to the payment endpoint.
+
+  Create an empty file (0 bytes) named empty.csv and attach it.
+
+  Validation rule: File must not be null or empty.
+  Expected: HTTP 4xx or 5xx error response.
+method: POST
+url: '{{baseUrl}}/upload/payment'
+order: 2000
+body:
+  type: formdata
+  content:
+    - key: file
+      type: file
+      src: ''
+      description: Attach an empty .csv file (0 bytes)
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status code is 4xx or 5xx (not 200)", function () {
+          pm.expect(pm.response.code).to.be.within(400, 599);
+      });

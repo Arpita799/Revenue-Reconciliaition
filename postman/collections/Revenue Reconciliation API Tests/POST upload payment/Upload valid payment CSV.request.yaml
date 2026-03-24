@@ -1,0 +1,49 @@
+$kind: http-request
+name: Upload valid payment CSV
+description: |-
+  Happy path test for payment CSV upload.
+
+  Attach a valid CSV file with the following content (save as payment_valid.csv):
+
+  accountId,recordDate,paidAmount
+  ACC001,2026-01-15,150.00
+  ACC002,2026-01-16,200.50
+  ACC003,2026-01-17,99.99
+
+  Expected: HTTP 200 with totalRows=3, successCount=3, failedCount=0
+method: POST
+url: '{{baseUrl}}/upload/payment'
+order: 1000
+body:
+  type: formdata
+  content:
+    - key: file
+      type: file
+      src: ''
+      description: 'Attach a valid .csv file with columns: accountId, recordDate (YYYY-MM-DD), paidAmount (decimal)'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status code is 200", function () {
+          pm.response.to.have.status(200);
+      });
+
+      pm.test("Response has required fields", function () {
+          const json = pm.response.json();
+          pm.expect(json).to.have.property("totalRows");
+          pm.expect(json).to.have.property("successCount");
+          pm.expect(json).to.have.property("failedCount");
+      });
+
+      pm.test("All fields are numbers", function () {
+          const json = pm.response.json();
+          pm.expect(json.totalRows).to.be.a("number");
+          pm.expect(json.successCount).to.be.a("number");
+          pm.expect(json.failedCount).to.be.a("number");
+      });
+
+      pm.test("totalRows equals successCount + failedCount", function () {
+          const json = pm.response.json();
+          pm.expect(json.totalRows).to.eql(json.successCount + json.failedCount);
+      });

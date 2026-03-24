@@ -1,0 +1,28 @@
+$kind: http-request
+name: 'Upload non-CSV file (wrong extension)'
+description: |-
+  Error case: upload a file with a .txt extension instead of .csv.
+
+  Create a plain text file named data.txt with any content, e.g.:
+    accountId,recordDate,paidAmount
+    ACC001,2026-01-15,150.00
+
+  Validation rule: File must have a .csv extension.
+  Expected: HTTP 4xx or 5xx error response.
+method: POST
+url: '{{baseUrl}}/upload/payment'
+order: 3000
+body:
+  type: formdata
+  content:
+    - key: file
+      type: file
+      src: ''
+      description: Attach a .txt file (wrong extension) instead of a .csv file
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status code is 4xx or 5xx (not 200)", function () {
+          pm.expect(pm.response.code).to.be.within(400, 599);
+      });

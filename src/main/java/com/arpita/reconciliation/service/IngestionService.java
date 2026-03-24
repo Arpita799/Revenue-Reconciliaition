@@ -72,7 +72,7 @@ public class IngestionService {
                 }
                 catch (Exception e){
                     failed++;
-                    logError(line,file.getOriginalFilename(),rowNumber,e.getMessage());
+                    logError(line,file.getOriginalFilename(),rowNumber,e.getClass().getSimpleName() + ": " + e.getMessage());
                 }
             }
         }

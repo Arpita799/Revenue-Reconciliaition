@@ -1,0 +1,29 @@
+$kind: http-request
+name: Upload file with invalid amount
+description: |-
+  Error case: upload a CSV where a row has a non-numeric value in the paidAmount field.
+
+  Create a file named payment_invalid_amount.csv with the following content:
+    accountId,recordDate,paidAmount
+    ACC001,2026-01-15,abc
+    ACC002,2026-01-16,200.50
+
+  Validation rule: paidAmount must be a valid decimal number.
+  Expected: HTTP 4xx or 5xx error response, or successCount < totalRows.
+method: POST
+url: '{{baseUrl}}/upload/payment'
+order: 5000
+body:
+  type: formdata
+  content:
+    - key: file
+      type: file
+      src: ''
+      description: 'Attach a .csv file where the amount field contains a non-numeric value (e.g. "abc")'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status code is 4xx or 5xx (not 200)", function () {
+          pm.expect(pm.response.code).to.be.within(400, 599);
+      });

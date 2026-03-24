@@ -1,6 +1,7 @@
 package com.arpita.reconciliation.entity;
 
 
+import com.arpita.reconciliation.enums.ReconciliationStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,7 +11,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-
+//this table stores computed data so no need for mapping relations; for easier and faster execution
 @Entity
 @Table(name="reconciliation_result")
 @Data
@@ -24,15 +25,27 @@ public class ReconciliationResult {
     private String accountId;
 
     @Column(nullable = false)
-    private LocalDate recordDate;
+    private String invoiceId;
 
+    private String transactionId;
+
+    @Column(nullable = false)
     private BigDecimal billedAmount;
 
+    @Column(nullable = false)
     private BigDecimal paidAmount;
 
+    @Column(nullable = false)
     private BigDecimal difference;
 
-    private String status;
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private ReconciliationStatus status;
 
     private LocalDateTime createdAt;
+
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = LocalDateTime.now();
+    }
 }

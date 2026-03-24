@@ -1,0 +1,7 @@
+$kind: collection
+name: Revenue Reconciliation API Tests
+description: Test suite for the Revenue Reconciliation API with billing and payment file upload endpoints
+variables:
+  - key: baseUrl
+    value: 'http://localhost:8080'
+    description: Base URL for the Revenue Reconciliation API

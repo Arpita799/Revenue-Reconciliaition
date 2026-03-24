@@ -1,0 +1,29 @@
+$kind: http-request
+name: 'Upload file with fewer than 3 columns'
+description: |-
+  Error case: upload a CSV where rows have fewer than 3 columns.
+
+  Create a file named billing_few_columns.csv with the following content:
+    accountId,recordDate
+    ACC001,2026-01-15
+    ACC002,2026-01-16
+
+  Validation rule: Each CSV row must have at least 3 fields.
+  Expected: HTTP 4xx or 5xx error response, or successCount < totalRows.
+method: POST
+url: '{{baseUrl}}/upload/billing'
+order: 7000
+body:
+  type: formdata
+  content:
+    - key: file
+      type: file
+      src: ''
+      description: Attach a .csv file where rows have only 2 columns (missing the billedAmount column)
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status code is 4xx or 5xx (not 200)", function () {
+          pm.expect(pm.response.code).to.be.within(400, 599);
+      });

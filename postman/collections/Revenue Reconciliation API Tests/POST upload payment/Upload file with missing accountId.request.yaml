@@ -1,0 +1,29 @@
+$kind: http-request
+name: Upload file with missing accountId
+description: |-
+  Error case: upload a CSV where a row has an empty accountId field.
+
+  Create a file named payment_missing_accountid.csv with the following content:
+    accountId,recordDate,paidAmount
+    ,2026-01-15,150.00
+    ACC002,2026-01-16,200.50
+
+  Validation rule: accountId must not be empty.
+  Expected: HTTP 4xx or 5xx error response, or successCount < totalRows.
+method: POST
+url: '{{baseUrl}}/upload/payment'
+order: 6000
+body:
+  type: formdata
+  content:
+    - key: file
+      type: file
+      src: ''
+      description: Attach a .csv file where the accountId field is empty in one or more rows
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status code is 4xx or 5xx (not 200)", function () {
+          pm.expect(pm.response.code).to.be.within(400, 599);
+      });

@@ -1,0 +1,32 @@
+$kind: http-request
+name: Upload file exceeding 5MB
+description: |-
+  Error case: upload a CSV file that exceeds the 5MB size limit.
+
+  To generate a large CSV file, you can use a script or tool to create a file larger than 5MB (5,242,880 bytes).
+  Example Python snippet to generate a large billing CSV:
+
+    with open("billing_large.csv", "w") as f:
+        f.write("accountId,recordDate,billedAmount\n")
+        for i in range(200000):
+            f.write(f"ACC{i:06d},2026-01-15,{i}.99\n")
+
+  Validation rule: File size must not exceed 5MB.
+  Expected: HTTP 4xx or 5xx error response (typically 413 Payload Too Large or 400 Bad Request).
+method: POST
+url: '{{baseUrl}}/upload/billing'
+order: 8000
+body:
+  type: formdata
+  content:
+    - key: file
+      type: file
+      src: ''
+      description: Attach a .csv file larger than 5MB (5,242,880 bytes) to trigger the size limit validation
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status code is 4xx or 5xx (not 200)", function () {
+          pm.expect(pm.response.code).to.be.within(400, 599);
+      });

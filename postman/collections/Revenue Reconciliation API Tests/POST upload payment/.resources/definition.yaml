@@ -1,0 +1,4 @@
+$kind: collection
+name: 'POST /upload/payment'
+description: Tests for the payment CSV upload endpoint (POST /upload/payment)
+order: 2000

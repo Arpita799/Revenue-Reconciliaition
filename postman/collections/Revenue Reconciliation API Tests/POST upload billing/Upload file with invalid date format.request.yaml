@@ -1,0 +1,29 @@
+$kind: http-request
+name: Upload file with invalid date format
+description: |-
+  Error case: upload a CSV where a row has an invalid date format (DD-MM-YYYY instead of YYYY-MM-DD).
+
+  Create a file named billing_invalid_date.csv with the following content:
+    accountId,recordDate,billedAmount
+    ACC001,26-02-2026,150.00
+    ACC002,15-01-2026,200.50
+
+  Validation rule: recordDate must be a valid ISO date format (YYYY-MM-DD).
+  Expected: HTTP 4xx or 5xx error response, or successCount < totalRows.
+method: POST
+url: '{{baseUrl}}/upload/billing'
+order: 4000
+body:
+  type: formdata
+  content:
+    - key: file
+      type: file
+      src: ''
+      description: 'Attach a .csv file with invalid date format (e.g. 26-02-2026 instead of 2026-02-26)'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status code is 4xx or 5xx (not 200)", function () {
+          pm.expect(pm.response.code).to.be.within(400, 599);
+      });
