@@ -3,12 +3,9 @@ package com.arpita.reconciliation.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 
 @Entity
 @Table(name="billing_records")
@@ -36,4 +33,8 @@ public class BillingRecords {
 
     private LocalDateTime createdAt;
 
+    @PrePersist
+    public void prePersist(){
+        this.createdAt = LocalDateTime.now();
+    }
 }

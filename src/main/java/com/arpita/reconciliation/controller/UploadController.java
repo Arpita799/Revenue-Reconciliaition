@@ -28,7 +28,7 @@ public class UploadController {
         validateFile(file);
         log.info("Billing file upload started: {}",file.getOriginalFilename());
         UploadResponse response = ingestionService.processBillingFile(file);
-        log.info("Billing file upload started: {}",file.getOriginalFilename());
+        log.info("Billing file upload completed: {}",file.getOriginalFilename());
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
@@ -37,7 +37,7 @@ public class UploadController {
         validateFile(file);
         log.info("Payment file upload started: {}",file.getOriginalFilename());
         UploadResponse response = ingestionService.processPaymentFile(file);
-        log.info("Payment file upload started: {}",file.getOriginalFilename());
+        log.info("Payment file upload completed: {}",file.getOriginalFilename());
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
