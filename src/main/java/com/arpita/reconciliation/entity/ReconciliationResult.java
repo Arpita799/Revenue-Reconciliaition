@@ -44,8 +44,19 @@ public class ReconciliationResult {
 
     private LocalDateTime createdAt;
 
+    private LocalDate billingDate;
+
+    @Column(length = 500)
+    private String notes;
+
+    private String reconciledBy = "SYSTEM";
+
+    private LocalDateTime reconciledAt;
+
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
+        this.reconciledAt = LocalDateTime.now();
+        if(this.reconciledBy == null) this.reconciledBy = "SYSTEM";
     }
 }

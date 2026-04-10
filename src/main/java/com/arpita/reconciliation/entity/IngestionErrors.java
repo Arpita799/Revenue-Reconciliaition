@@ -1,5 +1,6 @@
 package com.arpita.reconciliation.entity;
 
+import com.arpita.reconciliation.enums.FileType;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -28,6 +29,9 @@ public class IngestionErrors {
 
     @Column(nullable = false, length = 1000)
     private String errorMessage;
+
+    @Enumerated(EnumType.STRING)
+    private FileType fileType;
 
     private LocalDateTime createdAt;
 

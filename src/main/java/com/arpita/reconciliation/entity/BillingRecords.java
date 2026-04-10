@@ -1,5 +1,6 @@
 package com.arpita.reconciliation.entity;
 
+import com.arpita.reconciliation.enums.BillingStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -29,9 +30,23 @@ public class BillingRecords {
     @Column(nullable = false)
     private BigDecimal billedAmount;
 
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private BillingStatus billingStatus = BillingStatus.PENDING;
+
+    @Column(length = 3)
+    private String currency = "INR";
+
     private String sourceFile;
 
     private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
+
+    @PreUpdate
+    public void preUpdate(){
+        this.updatedAt = LocalDateTime.now();
+    }
 
     @PrePersist
     public void prePersist(){

@@ -34,11 +34,24 @@ public class PaymentRecords {
     private LocalDate recordDate;
 
     @Column(nullable = false)
+    private boolean isDuplicate = false;
+
+    @Column(nullable = false)
     private BigDecimal paidAmount;
+
+    @Column(length = 3)
+    private String currency = "INR";
 
     private String sourceFile;
 
     private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
+
+    @PreUpdate
+    public void preUpdate(){
+        this.updatedAt = LocalDateTime.now();
+    }
 
     @PrePersist
     public void prePersist(){
