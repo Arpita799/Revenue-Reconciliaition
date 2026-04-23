@@ -24,17 +24,17 @@ public class BillingCsvParser {
         String dateStr = fields[1].trim();
         String amountStr = fields[2].trim();
         String invoiceId = fields[3].trim();
-        BigDecimal billedAmount = new BigDecimal(amountStr.trim());
         if(accountId.isEmpty()){
             throw new IllegalArgumentException("Account ID is missing!");
         }
         if(invoiceId.isEmpty()){
             throw new IllegalArgumentException("Invoice ID is missing!");
         }
-        if (billedAmount.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("Negative billing amount not allowed");
-        }
          try{
+             BigDecimal billedAmount = new BigDecimal(amountStr.trim());
+             if (billedAmount.compareTo(BigDecimal.ZERO) < 0) {
+                 throw new IllegalArgumentException("Negative billing amount not allowed");
+             }
              LocalDate recordDate = LocalDate.parse(dateStr);
              BillingRecords record = new BillingRecords();
              record.setAccountId(accountId);
@@ -46,11 +46,11 @@ public class BillingCsvParser {
 
              return record;
          }
-         catch (DateTimeException e){
-             throw new IllegalArgumentException("Invalid date format:" + dateStr,e);
-         }
          catch (NumberFormatException e){
              throw new IllegalArgumentException("Invalid amount format:" + amountStr,e);
+         }
+         catch (DateTimeException e){
+             throw new IllegalArgumentException("Invalid date format:" + dateStr,e);
          }
     }
 }

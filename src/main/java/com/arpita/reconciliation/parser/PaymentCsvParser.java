@@ -32,7 +32,6 @@ public class PaymentCsvParser {
         String amountStr = fields[2].trim();
         String transactionId = fields[3].trim();
         String referenceId = fields[4].trim();
-        BigDecimal paidAmount = new BigDecimal(amountStr.trim());
         if(accountId.isEmpty()){
             throw new IllegalArgumentException("Account ID is missing!");
         }
@@ -42,10 +41,11 @@ public class PaymentCsvParser {
         if(referenceId.isEmpty()){
             throw new IllegalArgumentException("Reference ID is missing!");
         }
-        if (paidAmount.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("Negative payment not supported yet");
-        }
         try{
+            BigDecimal paidAmount = new BigDecimal(amountStr.trim());
+            if (paidAmount.compareTo(BigDecimal.ZERO) < 0) {
+                throw new IllegalArgumentException("Negative payment not supported yet");
+            }
             LocalDate recordDate = LocalDate.parse(dateStr);
             PaymentRecords record = new PaymentRecords();
             record.setAccountId(accountId);
@@ -67,9 +67,6 @@ public class PaymentCsvParser {
         }
         catch (NumberFormatException e){
             throw new IllegalArgumentException("Invalid amount format:" + amountStr,e);
-        }
-        catch (Exception e) {
-            throw new IllegalArgumentException(e);
         }
     }
 }

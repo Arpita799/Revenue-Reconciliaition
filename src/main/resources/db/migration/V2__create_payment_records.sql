@@ -10,7 +10,8 @@ CREATE TABLE payment_records (
     source_file VARCHAR(255),
     created_at TIMESTAMP,
     updated_at TIMESTAMP,
-    CONSTRAINT fk_billing
+    CONSTRAINT fk_payment_billing
      FOREIGN KEY (reference_id)
          REFERENCES billing_records(invoice_id)
+         ON DELETE RESTRICT
 );

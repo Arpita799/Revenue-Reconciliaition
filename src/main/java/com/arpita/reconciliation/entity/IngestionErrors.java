@@ -35,4 +35,9 @@ public class IngestionErrors {
 
     private LocalDateTime createdAt;
 
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = LocalDateTime.now();
+    }
+
 }

@@ -12,4 +12,7 @@ CREATE TABLE reconciliation_result (
     billing_date DATE,
     created_at TIMESTAMP,
     reconciled_at TIMESTAMP
+
+    CONSTRAINT chk_reconciliation_status
+        CHECK (status IN ('MATCHED', 'PARTIAL', 'OVERPAID', 'UNPAID'))
 );
