@@ -1,6 +1,7 @@
 package com.arpita.reconciliation.controller;
 
 import com.arpita.reconciliation.dto.UploadResponse;
+import com.arpita.reconciliation.exception.InvalidFileException;
 import com.arpita.reconciliation.service.IngestionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,17 +44,17 @@ public class UploadController {
 
     private void validateFile(MultipartFile file){
         if(file == null || file.isEmpty()){
-            throw new IllegalArgumentException("File is missing or empty!");
+            throw new InvalidFileException("File is missing or empty!");
         }
 
         if(file.getSize() > MAX_FILE_SIZE){
-            throw new IllegalArgumentException("File size exceeds allowed limit!");
+            throw new InvalidFileException("File size exceeds allowed limit!");
         }
 
         String filename = file.getOriginalFilename();
 
         if(!StringUtils.hasText(filename) || !filename.toLowerCase().endsWith(".csv")){
-            throw new IllegalArgumentException("Only CSV files are allowed!");
+            throw new InvalidFileException("Only CSV files are allowed!");
         }
 
         String contentType = file.getContentType();
@@ -66,7 +67,7 @@ public class UploadController {
         );
         if(contentType == null ||
                 !ALLOWED_MIME_TYPES.contains(contentType)){
-            throw new IllegalArgumentException("Invalid file type!");
+            throw new InvalidFileException("Unsupported file content type: " + contentType);
         }
     }
 }
