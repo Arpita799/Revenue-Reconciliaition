@@ -46,7 +46,7 @@ public class ReconciliationResult {
 
     private LocalDate billingDate;
 
-    @Column(length = 500)
+    @Column(length = 255)
     private String notes;
 
     private String reconciledBy = "SYSTEM";

@@ -1,6 +1,7 @@
 package com.arpita.reconciliation.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -10,6 +11,7 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import java.time.LocalDateTime;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
     //    400 — Validation / bad input errors thrown by controller or parsers
@@ -31,11 +33,12 @@ public class GlobalExceptionHandler {
     }
 
     // 500 — Catch-all for unexpected exceptions (RuntimeException, etc.) - Generic
+    @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneric(
             Exception ex,
             HttpServletRequest request
     ){
-        System.err.println("Unexpected error at "+request.getRequestURI()+": "+ex.getMessage());
+        log.error("Unexpected error at {}: {}",request.getRequestURI(),ex.getMessage(),ex); // The trailing `ex` argument tells Slf4j to print the full stack trace
         return  buildResponse(HttpStatus.INTERNAL_SERVER_ERROR,"An unexpected error occured. Please try again later",request.getRequestURI());
     }
 

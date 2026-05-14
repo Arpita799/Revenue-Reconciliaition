@@ -33,8 +33,8 @@ public class PaymentRecords {
     @Column(nullable = false)
     private LocalDate recordDate;
 
-    @Column(nullable = false)
-    private boolean isDuplicate = false;
+    @Column(name = "is_duplicate",nullable = false)
+    private boolean duplicate = false;
 
     @Column(nullable = false)
     private BigDecimal paidAmount;

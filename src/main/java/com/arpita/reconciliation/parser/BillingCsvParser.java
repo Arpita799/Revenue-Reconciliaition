@@ -43,7 +43,6 @@ public class BillingCsvParser {
              record.setRecordDate(recordDate);
              record.setBilledAmount(billedAmount);
              record.setSourceFile(sourceFile);
-             record.setCreatedAt(LocalDateTime.now());
 
              return record;
          }
