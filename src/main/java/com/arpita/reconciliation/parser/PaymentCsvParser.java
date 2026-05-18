@@ -61,7 +61,7 @@ public class PaymentCsvParser {
             }
             record.setBillingRecords(billing);
             record.setSourceFile(sourceFile);
-            boolean isDuplicate = paymentRecordsRepository.exixtsByTransactionId(transactionId);
+            boolean isDuplicate = paymentRecordsRepository.existsByTransactionId(transactionId);
             if(isDuplicate){
                 record.setDuplicate(true);
             }
