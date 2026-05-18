@@ -1,8 +1,16 @@
 package com.arpita.reconciliation.repository;
 
 import com.arpita.reconciliation.entity.ReconciliationResult;
+
+import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.awt.print.Pageable;
+import java.util.Optional;
+
 @Repository
-public interface ReconciliationResultRepository extends JpaRepository<ReconciliationResult,Long> { }
+public interface ReconciliationResultRepository extends JpaRepository<ReconciliationResult,Long> {
+    Page<ReconciliationResult> findAll(Pageable pageable);
+    Optional<ReconciliationResult> findByInvoiceId(String invoiceId);
+}

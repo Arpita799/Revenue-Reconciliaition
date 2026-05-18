@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface PaymentRecordsRepository extends JpaRepository<PaymentRecords,Long> {
     List<PaymentRecords> findByBillingRecords_InvoiceIdIn(List<String> invoiceIds);
+    boolean existsByTransactionId(String transactionId);
 }

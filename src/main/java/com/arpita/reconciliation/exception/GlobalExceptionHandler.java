@@ -2,6 +2,7 @@ package com.arpita.reconciliation.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -40,6 +41,15 @@ public class GlobalExceptionHandler {
     ){
         log.error("Unexpected error at {}: {}",request.getRequestURI(),ex.getMessage(),ex); // The trailing `ex` argument tells Slf4j to print the full stack trace
         return  buildResponse(HttpStatus.INTERNAL_SERVER_ERROR,"An unexpected error occured. Please try again later",request.getRequestURI());
+    }
+
+    public ResponseEntity<ErrorResponse> handleDuplicateKey(
+            DataIntegrityViolationException ex,
+            HttpServletRequest request
+    ){
+        return buildResponse(HttpStatus.CONFLICT,
+                "Duplicate record detected - this invoice or transaction has only been ingested.",
+                request.getRequestURI());
     }
 
     private ResponseEntity<ErrorResponse> buildResponse(

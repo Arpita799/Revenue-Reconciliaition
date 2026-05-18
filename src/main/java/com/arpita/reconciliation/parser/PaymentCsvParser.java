@@ -4,6 +4,7 @@ import com.arpita.reconciliation.entity.BillingRecords;
 import com.arpita.reconciliation.entity.PaymentRecords;
 import com.arpita.reconciliation.exception.CsvParsingException;
 import com.arpita.reconciliation.repository.BillingRecordsRepository;
+import com.arpita.reconciliation.repository.PaymentRecordsRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -17,6 +18,7 @@ import java.time.LocalDateTime;
 public class PaymentCsvParser {
 
     private final BillingRecordsRepository billingRecordsRepository;
+    private final PaymentRecordsRepository paymentRecordsRepository;
 
     public PaymentRecords parse(String line, String sourceFile) {
         if(line == null || line.trim().isEmpty()){
@@ -59,7 +61,10 @@ public class PaymentCsvParser {
             }
             record.setBillingRecords(billing);
             record.setSourceFile(sourceFile);
-
+            boolean isDuplicate = paymentRecordsRepository.exixtsByTransactionId(transactionId);
+            if(isDuplicate){
+                record.setDuplicate(true);
+            }
             return record;
         }
         catch (DateTimeException e){

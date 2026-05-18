@@ -11,12 +11,17 @@ import com.arpita.reconciliation.repository.PaymentRecordsRepository;
 import com.arpita.reconciliation.repository.ReconciliationResultRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,6 +31,9 @@ public class ReconciliationService {
     private final BillingRecordsRepository billingRecordsRepository;
     private final PaymentRecordsRepository paymentRecordsRepository;
     private final ReconciliationResultRepository reconciliationResultRepository;
+
+    @Value("${reconciliation.match.tolerance:0.01}")
+    private BigDecimal matchTolerance;
 
     @Transactional
     public ReconciliationSummaryResponse runReconciliation(){
@@ -64,6 +72,7 @@ public class ReconciliationService {
 
             List<PaymentRecords> payments = paymentsByInvoice.getOrDefault(invoiceId, List.of());
             BigDecimal paidAmount = payments.stream()
+                    .filter(p -> !p.isDuplicate())
                     .map(PaymentRecords::getPaidAmount)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
             totalPaid = totalPaid.add(paidAmount);
@@ -78,11 +87,11 @@ public class ReconciliationService {
                 status = ReconciliationStatus.UNPAID;
                 billingStatus = BillingStatus.PENDING;
                 notes = "No payment found for this invoice.";
-            } else if (difference.compareTo(BigDecimal.ZERO) == 0) {
+            } else if (difference.compareTo(matchTolerance) == 0) {
                 status = ReconciliationStatus.MATCHED;
                 billingStatus = BillingStatus.PAID;
                 notes = "Fully Paid";
-            } else if (difference.compareTo(BigDecimal.ZERO) < 0) {
+            } else if (difference.compareTo(matchTolerance) < 0) {
                 status = ReconciliationStatus.OVERPAID;
                 billingStatus = BillingStatus.OVERPAID;
                 notes = "Overpaid by " + difference.abs();
@@ -104,7 +113,9 @@ public class ReconciliationService {
                     .map(PaymentRecords::getTransactionId)
                     .orElse(null);
 
-            ReconciliationResult result = new ReconciliationResult();
+            Optional<ReconciliationResult> existing = reconciliationResultRepository.findByInvoiceId(invoiceId);
+            ReconciliationResult result = existing.orElse(new ReconciliationResult());
+
             result.setAccountId(billing.getAccountId());
             result.setInvoiceId(invoiceId);
             result.setTransactionId(transactionId);
@@ -133,5 +144,11 @@ public class ReconciliationService {
     private ReconciliationSummaryResponse emptyResponse(){
         return new ReconciliationSummaryResponse(0,0,0,0,0,
                 BigDecimal.ZERO,BigDecimal.ZERO,BigDecimal.ZERO);
+    }
+
+    public Page<ReconciliationResult> getResults(int page, int size){
+        return reconciliationResultRepository.findAll(
+                PageRequest.of(page,size, Sort.by("reconciledAt").descending())
+        );
     }
 }
