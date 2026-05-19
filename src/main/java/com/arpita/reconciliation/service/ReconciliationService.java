@@ -9,15 +9,20 @@ import com.arpita.reconciliation.enums.ReconciliationStatus;
 import com.arpita.reconciliation.repository.BillingRecordsRepository;
 import com.arpita.reconciliation.repository.PaymentRecordsRepository;
 import com.arpita.reconciliation.repository.ReconciliationResultRepository;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpHeaders;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -83,15 +88,15 @@ public class ReconciliationService {
             BillingStatus billingStatus;
             String notes;
 
-            if (payments.isEmpty()) {
+            if (payments.isEmpty() || paidAmount.compareTo(BigDecimal.ZERO) == 0) {
                 status = ReconciliationStatus.UNPAID;
                 billingStatus = BillingStatus.PENDING;
                 notes = "No payment found for this invoice.";
-            } else if (difference.compareTo(matchTolerance) == 0) {
+            } else if (difference.abs().compareTo(matchTolerance) <= 0) {
                 status = ReconciliationStatus.MATCHED;
                 billingStatus = BillingStatus.PAID;
                 notes = "Fully Paid";
-            } else if (difference.compareTo(matchTolerance) < 0) {
+            } else if (difference.compareTo(BigDecimal.ZERO) < 0) {
                 status = ReconciliationStatus.OVERPAID;
                 billingStatus = BillingStatus.OVERPAID;
                 notes = "Overpaid by " + difference.abs();
@@ -146,9 +151,56 @@ public class ReconciliationService {
                 BigDecimal.ZERO,BigDecimal.ZERO,BigDecimal.ZERO);
     }
 
-    public Page<ReconciliationResult> getResults(int page, int size){
-        return reconciliationResultRepository.findAll(
-                PageRequest.of(page,size, Sort.by("reconciledAt").descending())
-        );
+    public Page<ReconciliationResult> getResults(int page,
+                                                 int size,
+                                                 ReconciliationStatus status,
+                                                 String accountId){
+        Pageable pageable = PageRequest.of(page,size,
+                Sort.by("reconciledAt").descending());
+        if(status != null){
+            return reconciliationResultRepository.findByStatus(status,pageable);
+        }
+        if(accountId != null){
+            return reconciliationResultRepository.findByAccountId(accountId,pageable);
+        }
+        return reconciliationResultRepository.findAll(pageable);
+    }
+
+    public void streamResultsCsv(HttpServletResponse response) throws IOException {
+        response.setContentType("text/csv");
+        response.setHeader(HttpHeaders.CONTENT_DISPOSITION,
+                "attachment; filename=reconciliation_results.csv");
+
+        PrintWriter writer = response.getWriter();
+        writer.println("invoiceId,accountId,transactionId,billedAmount,paidAmount,difference,status,billingDate,notes,reconciledAt");
+
+        int page = 0;
+        Page<ReconciliationResult> chunk;
+        do{
+            chunk = reconciliationResultRepository.findAll(
+                    PageRequest.of(page,500,Sort.by("reconciledAt").descending()));
+                    for(ReconciliationResult r:chunk.getContent()){
+                        writer.println(
+                                        safe(r.getInvoiceId()) + "," +
+                                        safe(r.getAccountId()) + "," +
+                                        safe(r.getTransactionId()) + "," +
+                                        r.getBilledAmount() + "," +
+                                        r.getPaidAmount() + "," +
+                                        r.getDifference() + "," +
+                                        r.getStatus() + "," +
+                                        r.getBillingDate() + "," +
+                                        safe(r.getNotes()) + "," +
+                                        r.getReconciledAt()
+                        );
+                    }
+                    writer.flush();
+                    page++;
+        }while (chunk.hasNext());
+
+    }
+
+    private String safe(String value){
+        if(value == null) return "";
+        return value.contains(",") ? "\"" + value + "\"" : value;
     }
 }

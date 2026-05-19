@@ -43,6 +43,7 @@ public class GlobalExceptionHandler {
         return  buildResponse(HttpStatus.INTERNAL_SERVER_ERROR,"An unexpected error occured. Please try again later",request.getRequestURI());
     }
 
+    @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ErrorResponse> handleDuplicateKey(
             DataIntegrityViolationException ex,
             HttpServletRequest request

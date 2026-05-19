@@ -18,6 +18,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -39,10 +41,18 @@ public class IngestionService {
     }
 
     public UploadResponse processPaymentFile(MultipartFile file){
+        Set<String> existingTransactionIds = new HashSet<>(
+                paymentRecordsRepository.findAllTransactionIds()
+        );
         return processFile(
                 file,
                 line->paymentParser.parse(line,file.getOriginalFilename()),
-                        paymentRecordsRepository::save,FileType.PAYMENT);
+                record -> {
+                    if(existingTransactionIds.contains(record.getTransactionId())){
+                        record.setDuplicate(true);
+                    }
+                    paymentRecordsRepository.save(record);
+                },FileType.PAYMENT);
     }
 
     private <T> UploadResponse processFile(

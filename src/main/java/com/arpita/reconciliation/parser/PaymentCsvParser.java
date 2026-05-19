@@ -18,7 +18,6 @@ import java.time.LocalDateTime;
 public class PaymentCsvParser {
 
     private final BillingRecordsRepository billingRecordsRepository;
-    private final PaymentRecordsRepository paymentRecordsRepository;
 
     public PaymentRecords parse(String line, String sourceFile) {
         if(line == null || line.trim().isEmpty()){
@@ -61,10 +60,6 @@ public class PaymentCsvParser {
             }
             record.setBillingRecords(billing);
             record.setSourceFile(sourceFile);
-            boolean isDuplicate = paymentRecordsRepository.existsByTransactionId(transactionId);
-            if(isDuplicate){
-                record.setDuplicate(true);
-            }
             return record;
         }
         catch (DateTimeException e){
