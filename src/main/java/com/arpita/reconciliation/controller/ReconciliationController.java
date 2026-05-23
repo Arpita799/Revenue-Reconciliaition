@@ -1,5 +1,6 @@
 package com.arpita.reconciliation.controller;
 
+import com.arpita.reconciliation.dto.ReconciliationResultResponse;
 import com.arpita.reconciliation.dto.ReconciliationSummaryResponse;
 import com.arpita.reconciliation.entity.ReconciliationResult;
 import com.arpita.reconciliation.enums.ReconciliationStatus;
@@ -30,7 +31,7 @@ public class ReconciliationController {
     }
 
     @GetMapping("/results")
-    public ResponseEntity<Page<ReconciliationResult>> getResults(
+    public ResponseEntity<Page<ReconciliationResultResponse>> getResults(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(required = false)ReconciliationStatus status,

@@ -1,5 +1,6 @@
 package com.arpita.reconciliation.service;
 
+import com.arpita.reconciliation.dto.ReconciliationResultResponse;
 import com.arpita.reconciliation.dto.ReconciliationSummaryResponse;
 import com.arpita.reconciliation.entity.BillingRecords;
 import com.arpita.reconciliation.entity.PaymentRecords;
@@ -151,19 +152,27 @@ public class ReconciliationService {
                 BigDecimal.ZERO,BigDecimal.ZERO,BigDecimal.ZERO);
     }
 
-    public Page<ReconciliationResult> getResults(int page,
-                                                 int size,
-                                                 ReconciliationStatus status,
-                                                 String accountId){
+    public Page<ReconciliationResultResponse> getResults(int page,
+                                                         int size,
+                                                         ReconciliationStatus status,
+                                                         String accountId){
         Pageable pageable = PageRequest.of(page,size,
                 Sort.by("reconciledAt").descending());
-        if(status != null){
-            return reconciliationResultRepository.findByStatus(status,pageable);
+        Page<ReconciliationResult> raw;
+
+        if(status != null && accountId != null){
+            raw = reconciliationResultRepository.findByStatusAndAccountId(status,accountId,pageable);
         }
-        if(accountId != null){
-            return reconciliationResultRepository.findByAccountId(accountId,pageable);
+        else if(status != null){
+            raw = reconciliationResultRepository.findByStatus(status,pageable);
         }
-        return reconciliationResultRepository.findAll(pageable);
+        else if(accountId != null){
+            raw = reconciliationResultRepository.findByAccountId(accountId,pageable);
+        }
+        else{
+            raw = reconciliationResultRepository.findAll(pageable);
+        }
+        return raw.map(ReconciliationResultResponse::from);
     }
 
     public void streamResultsCsv(HttpServletResponse response) throws IOException {
@@ -199,8 +208,11 @@ public class ReconciliationService {
 
     }
 
-    private String safe(String value){
-        if(value == null) return "";
-        return value.contains(",") ? "\"" + value + "\"" : value;
+    private String safe(String value) {
+        if (value == null) return "";
+        String escaped = value.replace("\"", "\"\"");
+        return (escaped.contains(",") || escaped.contains("\"") || escaped.contains("\n"))
+                ? "\"" + escaped + "\""
+                : escaped;
     }
 }

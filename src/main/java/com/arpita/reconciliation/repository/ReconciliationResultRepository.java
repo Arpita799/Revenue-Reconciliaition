@@ -3,7 +3,6 @@ package com.arpita.reconciliation.repository;
 import com.arpita.reconciliation.entity.ReconciliationResult;
 
 import com.arpita.reconciliation.enums.ReconciliationStatus;
-import org.antlr.v4.runtime.misc.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,4 +17,6 @@ public interface ReconciliationResultRepository extends JpaRepository<Reconcilia
     Optional<ReconciliationResult> findByInvoiceId(String invoiceId);
     Page<ReconciliationResult> findByStatus(ReconciliationStatus status, Pageable pageable);
     Page<ReconciliationResult> findByAccountId(String accountId, Pageable pageable);
+    Page<ReconciliationResult> findByStatusAndAccountId(ReconciliationStatus status,String accountId, Pageable pageable);
+
 }

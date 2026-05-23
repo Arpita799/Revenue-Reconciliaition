@@ -11,6 +11,7 @@ import com.arpita.reconciliation.repository.BillingRecordsRepository;
 import com.arpita.reconciliation.repository.IngestionErrorsRepository;
 import com.arpita.reconciliation.repository.PaymentRecordsRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -29,6 +30,7 @@ import java.util.function.Function;
 public class IngestionService {
     private final BillingRecordsRepository billingRecordsRepository;
     private final PaymentRecordsRepository paymentRecordsRepository;
+    private final RecordPersistenceService recordPersistenceService;
     private final BillingCsvParser billingParser;
     private final PaymentCsvParser paymentParser;
     private final IngestionErrorsRepository ingestionErrorsRepository;
@@ -81,8 +83,13 @@ public class IngestionService {
 
                 try{
                     T entity = parser.apply(line);
-                    saver.accept(entity);
+                    recordPersistenceService.saveRecord(entity,saver);
                     success++;
+                }
+                catch(DataIntegrityViolationException e){
+                    failed++;
+                    logError(line, file.getOriginalFilename(), rowNumber,
+                            "DuplicateRecord: " + e.getMostSpecificCause().getMessage(), fileType);
                 }
                 catch (Exception e){
                     failed++;
