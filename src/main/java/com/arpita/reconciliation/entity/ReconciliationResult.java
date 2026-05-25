@@ -59,4 +59,9 @@ public class ReconciliationResult {
         this.reconciledAt = LocalDateTime.now();
         if(this.reconciledBy == null) this.reconciledBy = "SYSTEM";
     }
+
+    @PreUpdate
+    public void preUpdate(){
+        this.reconciledAt = LocalDateTime.now();
+    }
 }

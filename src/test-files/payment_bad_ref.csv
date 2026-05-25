@@ -1,0 +1,2 @@
+accountId,recordDate,paidAmount,transactionId,referenceId
+ACC001,2026-01-25,100.00,TXN-999,INV-NOTEXIST

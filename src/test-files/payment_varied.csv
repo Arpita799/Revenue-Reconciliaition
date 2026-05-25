@@ -1,0 +1,3 @@
+accountId,recordDate,paidAmount,transactionId,referenceId
+ACC003,2026-01-22,50.00,TXN-003,INV-003
+ACC004,2026-01-23,600.00,TXN-004,INV-004
