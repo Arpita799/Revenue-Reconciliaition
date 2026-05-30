@@ -49,7 +49,7 @@ public class GlobalExceptionHandler {
             HttpServletRequest request
     ){
         return buildResponse(HttpStatus.CONFLICT,
-                "Duplicate record detected - this invoice or transaction has only been ingested.",
+                "Duplicate record detected - this invoice or transaction has already been ingested.",
                 request.getRequestURI());
     }
 

@@ -152,6 +152,7 @@ public class ReconciliationService {
                 BigDecimal.ZERO,BigDecimal.ZERO,BigDecimal.ZERO);
     }
 
+    @Transactional(readOnly = true)
     public Page<ReconciliationResultResponse> getResults(int page,
                                                          int size,
                                                          ReconciliationStatus status,

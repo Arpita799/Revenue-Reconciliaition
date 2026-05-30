@@ -24,7 +24,7 @@ public class PaymentCsvParser {
             throw new CsvParsingException("Empty line encountered!");
         }
 
-        String[] fields = line.split(",");
+        String[] fields = line.split(",",-1);
 
         if(fields.length != 5){
             throw new CsvParsingException("Invalid column count!");
