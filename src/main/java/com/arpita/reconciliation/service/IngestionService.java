@@ -89,7 +89,7 @@ public class IngestionService {
                 catch(DataIntegrityViolationException e){
                     failed++;
                     logError(line, file.getOriginalFilename(), rowNumber,
-                            "DuplicateRecord: " + e.getMostSpecificCause().getMessage(), fileType);
+                            "Duplicate Record: " + e.getMostSpecificCause().getMessage(), fileType);
                 }
                 catch (Exception e){
                     failed++;

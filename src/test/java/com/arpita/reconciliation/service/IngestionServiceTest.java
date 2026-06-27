@@ -172,4 +172,57 @@ public class IngestionServiceTest {
         // Error should be logged twice
         verify(ingestionErrorsRepository, times(2)).save(any(IngestionErrors.class));
     }
+
+    @Test
+    void processBillingFile_dataIntegrityViolation_countsAsFailedAndLogsWithPrefix(){
+        String content = "accountId,recordDate,billedAmount,invoiceId\n" +
+                "ACC001,2026-01-15,150.00,INV-001";
+
+        when(billingCsvParser.parse(anyString(), anyString()))
+                .thenReturn(new BillingRecords());
+
+        doThrow(new DataIntegrityViolationException("duplicate key value violates unique constraint"))
+                .when(recordPersistenceService).saveRecord(any(),any());
+
+        UploadResponse response = ingestionService.processBillingFile(makeBillingFile(content));
+
+        assertThat(response.totalRows()).isEqualTo(1);
+        assertThat(response.successCount()).isZero();
+        assertThat(response.failedCount()).isEqualTo(1);
+
+        ArgumentCaptor<IngestionErrors> captor = ArgumentCaptor.forClass(IngestionErrors.class);
+        verify(ingestionErrorsRepository).save(captor.capture());
+
+        IngestionErrors logged = captor.getValue();
+        assertThat(logged.getErrorMessage()).startsWith("Duplicate Record:");
+        assertThat(logged.getRawLine()).isEqualTo("ACC001,2026-01-15,150.00,INV-001");
+    }
+
+    @Test
+    void processPaymentFile_newTransactionId_isNotMarkedAsDuplicate() {
+        String content = "accountId,recordDate,paidAmount,transactionId,referenceId\n" +
+                "ACC001,2026-01-20,150.00,TXN-NEW,INV-001";
+
+        PaymentRecords record = new PaymentRecords();
+        record.setTransactionId("TXN-NEW");
+        record.setDuplicate(false);
+
+        // Existing IDs do NOT contain TXN-NEW
+        when(paymentRecordsRepository.findAllTransactionIds())
+                .thenReturn(List.of("TXN-001", "TXN-002"));
+        when(paymentCsvParser.parse(anyString(), anyString()))
+                .thenReturn(record);
+
+        doAnswer(invocation -> {
+            Consumer<PaymentRecords> consumer = invocation.getArgument(1);
+            consumer.accept(record);
+            return null;
+        }).when(recordPersistenceService).saveRecord(any(), any());
+
+        UploadResponse response = ingestionService.processPaymentFile(makePaymentFile(content));
+
+        assertThat(response.successCount()).isEqualTo(1);
+        assertThat(response.failedCount()).isZero();
+        assertThat(record.isDuplicate()).isFalse();
+    }
 }

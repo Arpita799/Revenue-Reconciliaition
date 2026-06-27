@@ -16,11 +16,13 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.util.ReflectionTestUtils;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -256,5 +258,63 @@ public class ReconciliationServiceTest {
         assertThat(response.totalBilled()).isEqualTo(new BigDecimal("350.00"));
         assertThat(response.totalPaid()).isEqualTo(new BigDecimal("249.99"));
         assertThat(response.totalDifference()).isEqualTo(new BigDecimal("100.01"));
+    }
+
+    @Test
+    void streamResultCsv_writesHeaderRowAndDataRow() throws Exception{
+        ReconciliationResult result = new ReconciliationResult();
+        result.setInvoiceId("INV-001");
+        result.setAccountId("ACC-001");
+        result.setTransactionId("TXN-001");
+        result.setBilledAmount(new BigDecimal("100.00"));
+        result.setPaidAmount(new BigDecimal("100.00"));
+        result.setDifference(new BigDecimal("0.00"));
+        result.setStatus(ReconciliationStatus.MATCHED);
+        result.setBillingDate(LocalDate.of(2026, 1, 15));
+        result.setNotes("Fully Paid");
+        result.setReconciledAt(LocalDateTime.of(2026, 1, 20, 10, 0, 0));
+
+        when(reconciliationResultRepository.findAll(any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(result)));
+
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        reconciliationService.streamResultsCsv(response);
+
+        String body = response.getContentAsString();
+
+        assertThat(response.getContentType()).isEqualTo("text/csv");
+        assertThat(body).contains("invoiceId,accountId,transactionId");
+        assertThat(body).contains("INV-001");
+        assertThat(body).contains("ACC-001");
+        assertThat(body).contains("MATCHED");
+        assertThat(body).contains("Fully Paid");
+    }
+
+    @Test
+    void streamResultsCsv_nullTransactionId_writesEmptyFieldInsteadOfNull() throws Exception{
+        ReconciliationResult result = new ReconciliationResult();
+        result.setInvoiceId("INV-002");
+        result.setAccountId("ACC-002");
+        result.setTransactionId(null);   // UNPAID — no transaction
+        result.setBilledAmount(new BigDecimal("200.00"));
+        result.setPaidAmount(BigDecimal.ZERO);
+        result.setDifference(new BigDecimal("200.00"));
+        result.setStatus(ReconciliationStatus.UNPAID);
+        result.setBillingDate(LocalDate.of(2026, 1, 16));
+        result.setNotes("No payment found for this invoice.");
+        result.setReconciledAt(LocalDateTime.of(2026, 1, 20, 10, 0, 0));
+
+        when(reconciliationResultRepository.findAll(any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(result)));
+
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        reconciliationService.streamResultsCsv(response);
+
+        String body = response.getContentAsString();
+
+        assertThat(body).doesNotContain("null");
+        assertThat(body).contains("INV-002");
+        assertThat(body).contains("ACC-002");
+        assertThat(body).contains("UNPAID");
     }
 }
