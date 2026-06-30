@@ -5,6 +5,7 @@ import com.arpita.reconciliation.exception.InvalidFileException;
 import com.arpita.reconciliation.service.IngestionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
@@ -22,7 +23,9 @@ import java.util.Set;
 @Slf4j
 public class UploadController {
     private final IngestionService ingestionService;
-    private static final long MAX_FILE_SIZE = 5 * 1024 * 1024;
+
+    @Value("${upload.max-file-size-bytes}")
+    private long MAX_FILE_SIZE;
 
     @PostMapping("/billing")
     public ResponseEntity<UploadResponse> uploadBilling(@RequestParam("file") MultipartFile file){

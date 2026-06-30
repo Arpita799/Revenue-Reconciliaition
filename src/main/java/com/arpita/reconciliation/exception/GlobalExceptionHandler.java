@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.time.LocalDateTime;
@@ -22,6 +23,15 @@ public class GlobalExceptionHandler {
             HttpServletRequest request
     ){
         return buildResponse(HttpStatus.BAD_REQUEST,ex.getMessage(),request.getRequestURI());
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleTypeMismatch(
+            MethodArgumentTypeMismatchException ex,
+            HttpServletRequest request
+    ){
+        String message = "Invalid value '"+ex.getValue()+"' for the parameter '"+ex.getName()+"'.";
+        return buildResponse(HttpStatus.BAD_REQUEST,message,request.getRequestURI());
     }
 
     // 413 — Spring's own exception when multipart size is exceeded in config

@@ -38,7 +38,7 @@ public class ReconciliationService {
     private final PaymentRecordsRepository paymentRecordsRepository;
     private final ReconciliationResultRepository reconciliationResultRepository;
 
-    @Value("${reconciliation.match.tolerance:0.01}")
+    @Value("${reconciliation.match.tolerance}")
     private BigDecimal matchTolerance;
 
     @Transactional
